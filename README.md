@@ -8,9 +8,7 @@ a3-HvanTol-MWeirath
 
 ## Interactive World Ocean Atlas
 
-
-This is an example repository for your assignment 3 submission.
-(Put your a brief description of your final interactive visualization application and your dataset here.)
+For this project, we developed an interactive visualization using data from the [World Ocean Atlas 2013](https://www.nodc.noaa.gov/OC5/woa13/woa13data.html) dataset. We show two main panels: one is a global map of surface temperature or salinity (the user can choose which one they'd like to view). Clicking on the map brings up the temperature and salinity profiles corresponding to that location in the other panel. 
 
 
 ## Running Instructions
