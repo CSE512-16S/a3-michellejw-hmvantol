@@ -57,22 +57,23 @@ In this visualization we linked a T-S diagram to a depth profile to show the int
 
 ### Changes between Storyboard and the Final Implementation
 
-After going to office hours, we learned that D3 doesn't really interpolate colours on a map. We would have to use another javascript library like leaflet.js to make this sort of map. Instead, Michael came up with an idea where we could generate the base map in python and then overlay interactive rectangles on top of the background to make the map interactive.
+After going to office hours, we learned that D3 doesn't really interpolate colours on a map in the way we'd envisioned. We would have to use another javascript library like leaflet.js to make this sort of map. Instead, Michael came up with an idea where we could generate the base map in python and then overlay interactive rectangles on top of the background to make the map interactive.
 
 Originally we were only going to map one variable. After creating the visualization for temperature we decided to add salinity to make things more interesting. The user can toggle between two different surface maps for temperature and salinity and can visualize both salinity and temperature lines on the depth profile.
 
 We made longitude and latitude appear upon hovering over the map to help the user find and remember specific locations.
 
-After the lecture on colour, we moved away from the rainbow palette and used an XXXXXXX palette instead. This palette is better because _________________________________.
+After the lecture on colour, we moved away from the rainbow palette and used the new Matlab default palette, Parula, instead. The problem with the original palette was that it conveyed shapes, boundaries and other spatial relationships that were mostly arbitrary and misleading. We initially hadn't thought much about it much because the rainbow color map is very commonly used to show mapped variables like temperature and salinity. The Parula colormap is a sequential, continuous colormap ranging from blue to yellow, and although it's not perfect, we thought it did a better job at conveying the geospatial variables. 
 
-Originally, the plan was to keep all the axes constant to make the different profiles easily comparable. However, the salinity values had a really wide range and included some pretty low values in only a few locations. This broad salinity axis prevented the viewer from seeing the changes in the shape of the salinity profile, so we adjusted the salinity axis for each location.
+Originally, the plan was to keep all the axes constant to make the different profiles easily comparable. However, the salinity values had a really wide range and included some extremely low values in a few locations. This broad salinity axis prevented the viewer from seeing the changes in the shape of the salinity profile, so we adjusted the salinity axis for each location to emphasize variability in the shape of the profile.
+
 
 ## Development Process
 
 To start, Helena created the depth profile while Michelle created the map. After the two visualization were merged we both worked on the interactive components linking the two plots together.
 
-Include:
-- Breakdown of how the work was split among the group members.
-- A commentary on the development process, including answers to the following questions:
-  - Roughly how much time did you spend developing your application?
-  - What aspects took the most time?
+One of the major challenges encountered during our development process was the alignment of spatial coordinates between the background map and the plotted rectangles. Generating the background map required that we interpolate color values to a map image, but since the locations are in latitude and longitude, we also needed to project them appropriately so that they'd match the projection being used in our d3 script. We initially used Python libraries to generate the background map, but ended up generating the final map using Matlab's mapping toolbox. Once we had our map projected properly, it took some time to figure out the correct parameters for the Mercator projection using d3.geo. We ended up adjusting the x/y translation and also the scale value to get the right fit between the rectangle objects and the map.
+
+Once we had the two graphical components working together (map and profiles), we spent some time discussing how we might improve the final visualization from both stylistic and usability viewpoints. This included things like the opacity and shape of the rectangle objects, the appearance of the salinity axis, mouse hovering behavior, and the addition of a title and short description to the top of the visualization page.
+
+We didn't keep a strict tally on hours spent on our project, but estimate that we each spent around 20 hours working on it.
