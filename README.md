@@ -57,7 +57,7 @@ In this visualization we linked a T-S diagram to a depth profile to show the int
 
 ### Changes between Storyboard and the Final Implementation
 
-After going to office hours, we learned that D3 doesn't really interpolate colours on a map in the way we'd envisioned. We would have to use another javascript library like leaflet.js to make this sort of map. Instead, Michael came up with an idea where we could generate the base map in python and then overlay interactive rectangles on top of the background to make the map interactive.
+After going to office hours, we learned that D3 doesn't really interpolate colours on a map in the way we'd envisioned. We would have to use another javascript library like leaflet.js to make this sort of map. Instead, Michael came up with an idea where we could generate the base map in python and then overlay D3 rectangles on top of the background to make the map interactive.
 
 Originally we were only going to map one variable. After creating the visualization for temperature we decided to add salinity to make things more interesting. The user can toggle between two different surface maps for temperature and salinity and can visualize both salinity and temperature lines on the depth profile.
 
