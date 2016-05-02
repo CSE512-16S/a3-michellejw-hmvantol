@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body { font: 12px Arial;}
+
+path { 
+    stroke: red;
+    stroke-width: 2;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js" charset="utf=8"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var margin = {top:60, right:20, bottom:20, left:80},
+	width = 600 - margin.left - margin.right,
+	height = 800 - margin.top - margin.bottom;
+
+var x = d3.scale.linear()
+	.range([0, width]);
+
+var y = d3.scale.linear()
+	.range([0,height]);
+
+var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("top");
+
+var yAxis = d3.svg.axis()
+	.scale(y)
+	.orient("left");
+
+
+var lineFun = d3.svg.line()
+			.x(function(d) {return x(d.measure); })
+			.y(function(d) {return y(d.depth); })
+			.defined(function(d) {return d.measure != null; }) //line break if measure is null
+			.interpolate("basis");
+
+var svg = d3.select("body").append("svg")
+		.attr("width", width + margin.left + margin.right)
+		.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+d3.json("topo_woa.json", function(error, data){
+	if (error) return console.error(error);
+	
+	console.log(data);
+	
+	var latlon = data.objects.woa.geometries[1800].properties;
+	
+	graph = [];
+	
+	for (var i in latlon) {
+		graph.push({"depth" : i, "measure" : latlon[i]});
+	}
+	
+	graph.forEach(function(d) {
+		if (d.measure == -999.999) { d.measure = null}
+		else d.measure = d.measure;
+		if (d.depth == "SURFACE") { d.depth = 0 }
+		else {d.depth = +d.depth.split("d")[1].split("M")[0]};
+	});
+	
+	var allMeasure = []
+	for (var i in data.objects.woa.geometries) {
+		for (var j in data.objects.woa.geometries[i].properties) {
+			if (data.objects.woa.geometries[i].properties[j] == -999.999) { allMeasure.push(null) }
+			else { allMeasure.push(data.objects.woa.geometries[i].properties[j]) };
+		}
+	}
+	
+	x.domain(d3.extent(allMeasure));
+	y.domain(d3.extent(graph.map(function(d) { return d.depth; } )) );
+					
+	svg.append("g")
+		.attr("class", "x axis")
+		.call(xAxis);
+	
+	svg.append("g")
+		.attr("class", "y axis")
+		.call(yAxis);
+		
+	svg.append("text")
+		.attr("class", "x label")
+		.attr("text-anchor", "middle")
+		.attr("font-size", "14px")
+		.attr("x", width/2)
+		.attr("y", -margin.top/2)
+		.text("Temperature (\xB0C)");
+	
+	svg.append("text")
+		.attr("class", "y label")
+		.attr("text-anchor", "middle")
+		.attr("font-size", "14px")
+		.attr("transform", "translate("+(-margin.left/1.5)+","+(height/2)+")rotate(-90)")
+		.text("Depth (m)");
+	
+	svg.append("path")
+		.datum(graph)
+		.attr("class", "line")
+		.attr("d", lineFun);
+	
+	
+});
+
+
+
+</script>

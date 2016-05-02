@@ -1,0 +1,4 @@
+ogr2ogr -f GeoJSON land.json ne_110m_land.shp
+ogr2ogr -f GeoJSON woa.json woa13_decav_t00mn5dv2.shp
+
+topojson -o woa_land.json ne_110m_land/land.json woa13_decav_t00mn5dv2_shape/woa.json

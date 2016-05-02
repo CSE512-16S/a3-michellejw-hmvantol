@@ -1,0 +1,12 @@
+ogr2ogr -f GeoJSON land.json ne_110m_land.shp
+ogr2ogr -f GeoJSON temp_woa.json woa13_decav_t00mn5dv2.shp
+ogr2ogr -f GeoJSON salin_woa.json woa13_decav_s00mn5dv2.shp
+
+## Merge woa and land
+topojson -o woa_land.json woa13_decav_t00mn5dv2_shape/woa.json ne_110m_land/land.json -p
+
+## Just woa
+topojson -o topo_woa.json woa13_decav_t00mn5dv2_shape/woa.json -p
+
+## Merge temperature and salinity
+topojson -o temp_salin.json woa13_decav_t00mn5dv2_shape/temp_woa.json woa13_decav_s00mn5dv2_shape/salin_woa.json -p

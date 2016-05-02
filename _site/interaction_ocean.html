@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body { font: 12px Arial;}
+
+path { 
+    stroke: red;
+    stroke-width: 2;
+    fill: none;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: grey;
+    stroke-width: 1;
+    shape-rendering: crispEdges;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js" charset="utf=8"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var margin = {top:60, right:20, bottom:20, left:80},
+	width = {map: 930 , profile: 310 - margin.left - margin.right},
+	height = {map:465, profile:465 - margin.top - margin.bottom};
+	
+var x = d3.scale.linear()
+	.range([0, width.profile]);
+
+var y = d3.scale.linear()
+	.range([0,height.profile]);
+
+var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("top");
+
+var yAxis = d3.svg.axis()
+	.scale(y)
+	.orient("left");
+
+var line = d3.svg.line()
+		.x(function(d) {return x(d.measure); })
+		.y(function(d) {return y(d.depth); })
+		.defined(function(d) {return d.measure != null; }) //line break if measure is null
+		.interpolate("basis");
+
+var svg1 = d3.select("body")
+		.append("svg")
+		.attr("id", "profile")
+		.attr("width", width.profile + margin.left + margin.right)
+		.attr("height", height.profile + margin.top + margin.bottom)
+	.append("g")
+		.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+var svg2 = d3.select("body")
+	.append("svg")
+	.attr("id", "map")
+	.attr("width", width.map)
+	.attr("height", height.map);
+
+var projection = d3.geo.mercator();
+
+var xyorigin = [0,0];
+
+var dataset = [];
+
+svg2.selectAll("image")
+	.data([xyorigin]).enter()
+	.append("image")
+	.attr("xlink:href","sandbox/woa_map3.png")
+	.attr("width", width.map)
+	.attr("height", height.map);
+
+
+function drawAxes(data, graph) {
+
+	var allMeasure = []
+	for (var i in data.objects.woa.geometries) {
+		for (var j in data.objects.woa.geometries[i].properties) {
+			if (data.objects.woa.geometries[i].properties[j] == -999.999) { allMeasure.push(null) }
+			else { allMeasure.push(data.objects.woa.geometries[i].properties[j]) };
+		}
+	}
+
+	x.domain(d3.extent(allMeasure));
+	y.domain(d3.extent(graph.map(function(d) { return d.depth; } )) );
+					
+	svg1.append("g")
+		.attr("class", "x axis")
+		.call(xAxis);
+	
+	svg1.append("g")
+		.attr("class", "y axis")
+		.call(yAxis);
+		
+	svg1.append("text")
+		.attr("class", "x label")
+		.attr("text-anchor", "middle")
+		.attr("font-size", "14px")
+		.attr("x", width.profile/2)
+		.attr("y", -margin.top/2)
+		.text("Temperature (\xB0C)");
+	
+	svg1.append("text")
+		.attr("class", "y label")
+		.attr("text-anchor", "middle")
+		.attr("font-size", "14px")
+		.attr("transform", "translate("+(-margin.left/1.5)+","+(height.profile/2)+")rotate(-90)")
+		.text("Depth (m)");
+
+	svg1.append("path")
+		.datum(graph)
+		.attr("class", "line")
+		.attr("d", line);
+
+};
+
+function update(data, idx) {
+
+	var properties = data.objects.woa.geometries[idx].properties;
+	
+	graph = [];
+	
+	for (var i in properties) {
+		graph.push({"depth" : i, "measure" : properties[i]});
+	}
+	
+	graph.forEach(function(d) {
+		if (d.measure == -999.999) { d.measure = null}
+		else d.measure = d.measure;
+		if (d.depth == "SURFACE") { d.depth = 0 }
+		else {d.depth = +d.depth.split("d")[1].split("M")[0]};
+	});
+
+	var selection = d3.select("#profile").selectAll(".line").data([graph]);
+	
+	selection.enter().append("path").attr("class", "line");
+	selection.transition().duration(800).attr("d",line);
+
+};
+
+
+
+
+d3.json("topo_woa.json", function(error, data){
+	if (error) return console.error(error);
+	
+	update(data, 1096);	
+	drawAxes(data, graph);
+
+	dataset = data;
+
+	features = topojson.feature(data, data.objects.woa).features
+	
+	var rect = svg2.selectAll("rect")
+		.data(features).enter()
+		.append("rect")
+		.attr("x", function(d) {
+			return projection(d.geometry.coordinates)[0]; 
+		})
+		.attr("y", function(d) {
+			return projection(d.geometry.coordinates)[1];
+		})
+		.attr("width", 20) 
+		.attr("height", 20)
+		.style("stroke", "none")
+		.style("fill", "black")
+		.style("fill-opacity",0); //change opacity to see rectangles or make them disappear
+	
+
+	var active = null;
+	
+	rect.on({
+		"mouseover" : function(d) { d3.select(this).style("stroke", "black"); },
+		"mouseout" : function(d) { if (this != active) { d3.select(this).style("stroke", "none")}; },
+		"click" : function(d,i) {
+			var coordIdx = i;
+			update(data, coordIdx);
+			active = this;
+			d3.select(active).style("stroke", "white");
+			d3.select(active).style("stroke-width", 2);
+		}
+	});
+	
+
+
+
+});
+
+
+
+</script>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+.world {fill: #404040 }
+
+</style>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/1.6.19/topojson.min.js"></script>
+<script src="http://d3js.org/d3.geo.projection.v0.min.js"></script>
+<script>
+
+var width = 1000,
+    height = 1000;
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+
+// See http://bl.ocks.org/mortenjohs/4739921 to try different options
+
+// var projection = d3.geo.stereographic()
+// 	.translate([width / 2, height / 2])
+// 	.rotate([-25, 0])
+// 	.scale(150);
+
+var projection = d3.geo.aitoff()
+	.rotate([180,0]);
+
+var path = d3.geo.path().projection(projection);
+
+d3.json("ne_110m_ocean.json", function(error, topo) {
+// d3.json("world-50m.json", function(error, topo) {
+	if (error) throw error;
+	
+	var world = topojson.feature(topo, topo.objects.contours);
+	console.log(world);
+	
+	svg.append("g")
+			.attr("class", "world")
+		.selectAll("path")
+			.data(world.features).enter().append("path")
+				.attr("d", path);
+
+});
+
+
+</script>

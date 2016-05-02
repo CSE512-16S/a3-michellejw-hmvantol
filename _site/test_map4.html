@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+/* CSS goes here. */
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js" charset="utf=8"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
+<script>
+
+var width = 992, 
+	height = 496;
+
+// var width = 1000, // Do these dimensions need to match the dims of the image? (620x310)
+// 	height = 500;
+
+var svg = d3.select("body")
+	.append("svg")
+	.attr("width",width)
+	.attr("height",height);
+
+var dataset; //Global dataset variable so we can call it outside the callback function
+
+//var latScale = d3.scale.linear();
+//var longScale = d3.scale.linear(); // This only works because mercator projection is linear
+
+var projection = d3.geo.mercator();
+
+// Set the origin of the image, which is the upper left corner. I figured that I should set it the same way we set the position of the rectangle, so with coordinates. That means it would be -180
+// var xyorigin = [-180, 80]; // this doesn't work, but I don't know why...
+var xyorigin = [-179.5,69.5]; // 
+
+
+svg.selectAll("image")
+	.data([xyorigin]).enter() // why does xyorigin have to be in brackets? ([])
+	.append("image")
+	.attr("xlink:href","sandbox/woa_map3.png") // MW todo: Recreate image using utm coords
+	.attr("x",function(d) {
+		return projection(d)[0];
+	})
+	.attr("y",function(d) {
+		return projection(d)[1];
+	})
+	.attr("width",width)
+	.attr("height",height);
+
+
+d3.json("woa_land.json", function(error, data){
+	if (error) return console.error(error);
+
+	dataset = topojson.feature(data, data.objects.woa).features
+		
+	var rect = svg.selectAll("rect")
+		.data(dataset).enter()
+		.append("rect")
+		.attr("x", function(d) { //do we need to shift to rect. upperleft coords?
+			return projection(d.geometry.coordinates)[0]; 
+		})
+		.attr("y", function(d) {
+			return projection(d.geometry.coordinates)[1];
+		})
+		.attr("width",width/(360/5)) 
+		.attr("height",height/(180/5))
+		.style("stroke", "none")
+		.style("fill", "black")
+		.style("fill-opacity",0.5); //change opacity to see rectangles or make them disappear
+		
+	rect.on({
+		"mouseover" : function(d) { d3.select(this).style("stroke", "black"); },
+		"mouseout" : function(d) { d3.select(this).style("stroke", "none"); },
+		"click" : function(d,i) {
+			console.log(i);
+			console.log(d.geometry.coordinates[0]);
+			console.log(d.geometry.coordinates[1]);
+		}
+	});
+
+
+});
+
+
+
+</script>
