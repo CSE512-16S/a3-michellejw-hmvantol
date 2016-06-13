@@ -55,7 +55,7 @@ p {
 var margin = {top:80, right:20, bottom:40, left:80},
 	width = {map: 4374/5 , profile: ((4374/2)/5) - margin.left - margin.right},
 	height = {map:3316/5, profile: (3316/5) - margin.top - margin.bottom};
-	
+
 var x1 = d3.scale.linear()
 	.range([0, width.profile]);
 
@@ -68,7 +68,7 @@ var y = d3.scale.linear()
 var xAxis1 = d3.svg.axis()
 	.scale(x1)
 	.orient("top");
-	
+
 var xAxis2 = d3.svg.axis()
 	.scale(x2)
 	.orient("bottom")
@@ -142,7 +142,7 @@ function drawAxes(data, graph) {
 	x1.domain(d3.extent(allTemp));
 	x2.domain(d3.extent(graph.map(function(d) { return d.salinity; } )) );
 	y.domain(d3.extent(graph.map(function(d) { return d.depth; } )) );
-					
+
 	svg1.append("g")
 		.attr("class", "x axis")
 		.call(xAxis1)
@@ -153,11 +153,11 @@ function drawAxes(data, graph) {
 		.attr("id", "salinity")
 		.call(xAxis2)
 		.attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
-	
+
 	svg1.append("g")
 		.attr("class", "y axis")
 		.call(yAxis);
-		
+
 	svg1.append("text")
 		.attr("class", "x label")
 		.attr("text-anchor", "middle")
@@ -175,7 +175,7 @@ function drawAxes(data, graph) {
 		.attr("y", (margin.top*(-0.05)))
 		.style("fill", "blue")
 		.text("Salinity (\u2030)");
-	
+
 	svg1.append("text")
 		.attr("class", "y label")
 		.attr("text-anchor", "middle")
@@ -188,7 +188,7 @@ function drawAxes(data, graph) {
 		.attr("class", "line1")
 		.attr("d", line1)
 		.style("stroke", "white");
-		
+
 	svg1.append("path")
 		.datum(graph)
 		.attr("class", "line2")
@@ -203,11 +203,11 @@ function update(data, idx) {
 	var salinity = data.objects.salin_woa.geometries[idx].properties;
 
 	graph = [];
-	
+
 	for (var i in temperature) {
 		graph.push({"depth" : i, "temperature" : temperature[i], "salinity": salinity[i]});
 	}
-	
+
 	graph.forEach(function(d) {
 		if (d.temperature == -999.999) { d.temperature = null}
 		else d.temperature = d.temperature;
@@ -216,40 +216,40 @@ function update(data, idx) {
 		if (d.depth == "SURFACE") { d.depth = 0 }
 		else {d.depth = +d.depth.split("d")[1].split("M")[0]};
 	});
-	
+
 	var x2_floor = Math.floor(d3.min(graph.map(function(d) {return d.salinity; } )));
 	var x2_ceil = Math.ceil(d3.max(graph.map(function(d) {return d.salinity; } )));
-	
+
 	x2.domain([x2_floor, x2_ceil]);
 
 	var axisSelect = d3.select("#profile").selectAll("g#salinity.x.axis").data([graph]);
 	axisSelect.attr("class", "x axis").attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
 	axisSelect.call(xAxis2);
-	
+
 	var tempSelect = d3.select("#profile").selectAll(".line1").data([graph]);
 	tempSelect.attr("class", "line1");
 	tempSelect.transition().duration(800).attr("d",line1).style("stroke", "red");
-	
+
 	var salinSelect = d3.select("#profile").selectAll(".line2").data([graph]);
 	salinSelect.attr("class", "line2");
 	salinSelect.transition().duration(800).attr("d",line2).style("stroke", "blue");
-	
-	
+
+
 };
 
 d3.json("temp_salin.json", function(error, data){
 	if (error) return console.error(error);
 
-	update(data, 0);	
+	update(data, 0);
 	drawAxes(data, graph);
-	
+
 	features = topojson.feature(data, data.objects.temp_woa).features
 
 	var rect = svg2.selectAll("rect")
 		.data(features).enter()
 		.append("rect")
 		.attr("x", function(d) {
-			return projection(d.geometry.coordinates)[0]; 
+			return projection(d.geometry.coordinates)[0];
 		})
 		.attr("y", function(d) {
 			return projection(d.geometry.coordinates)[1];
@@ -261,7 +261,7 @@ d3.json("temp_salin.json", function(error, data){
 		.style("stroke", "none")
 		.style("fill", "black")
 		.style("fill-opacity",0);
-	
+
 	var lat = svg1.append("text")
 		.attr("id", "lat")
 		.attr("text-anchor", "left")
@@ -287,7 +287,7 @@ d3.json("temp_salin.json", function(error, data){
 		.attr("x", width.map/2)
 		.attr("y", height.map/2)
 		.text(" ");
-	
+
 	var lat_hover = svg2.append("text")
 		.attr("id", "hover1")
 		.attr("text-anchor", "left")
@@ -307,9 +307,9 @@ d3.json("temp_salin.json", function(error, data){
 
 
 	var active = null; // variable to record which rectangle has been clicked
-	
+
 	rect.on({
-		"mouseover" : function(d, i) { 
+		"mouseover" : function(d, i) {
 			d3.select(this).style("fill", "black").style("fill-opacity",0.2);
 			var hoverLat = Math.round(features[i].geometry.coordinates[1]*10)/10
 			if (hoverLat < 0) { var NS = "S"; } else { var NS = "N"; }
@@ -324,8 +324,8 @@ d3.json("temp_salin.json", function(error, data){
 				.attr("x", projection(features[i].geometry.coordinates)[0]+15 )
 				.attr("y", projection(features[i].geometry.coordinates)[1]-5 );
 		},
-		"mouseout" : function(d) { 
-			if (this != active) { 
+		"mouseout" : function(d) {
+			if (this != active) {
 				d3.select(this).style("fill-opacity", 0);
 			}
 			d3.select("#map").selectAll("text#hover1").text(" ");
