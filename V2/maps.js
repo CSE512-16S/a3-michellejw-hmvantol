@@ -64,10 +64,9 @@ $( document ).ready(function() {
   		.attr("height", plot_height + margin.top + margin.bottom)
   	  .append("g");
 
-  // define svg element or map
-  var svg2 = d3.select("body")
+  // define svg element for map
+  var svg2 = d3.select("#map")
   		.append("svg")
-  		.attr("id", "map")
   		.attr("width", map_width)
   		.attr("height", map_height);
 
@@ -81,15 +80,17 @@ $( document ).ready(function() {
       .translate([(map_width/2)-40, (map_height/2)])
       .scale(127);
 
-  // Load the default image, which we've set to salinity
+
   svg2.selectAll("image")
   	.data([xyorigin]).enter()
   	.append("image")
   	.attr("xlink:href","woa_sal2.png")
   	.attr("width", map_width)
   	.attr("height", map_height)
-  	.attr("id","bgmap")
   	.style("opacity", 1);
+
+
+// need dynamic resize function
 
 
 });

@@ -8,6 +8,15 @@ h1,p{
 }
 
 
+#map-container {
+  padding-top: 70px;
+  padding-bottom: 70px;
+  padding-left: 0px;
+  padding-right: 0px;
+  margin-left:-7.5px;
+}
+
+
 path {
     stroke-width: 2;
     fill: none;
