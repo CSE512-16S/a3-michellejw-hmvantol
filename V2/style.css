@@ -3,12 +3,14 @@ html, body, .container-fluid {
 
 #titlerow {
 	height: 20%;
-	/*border: 2px solid green;*/
 }
 
 #inforow {
 	height: 80%;
-	/*border: 2px solid red;*/
+}
+
+#pdesc {
+	width:50%;
 }
 
 body { font: 12px Arial;}
@@ -17,9 +19,7 @@ h1,p{
 	font-family: Arial, Helvetica, sans-serif;
 }
 
-/*#plot-container, #map-container {
-    border: 1px solid black;
-}*/
+
 
 path {
     stroke-width: 2;

@@ -204,15 +204,20 @@ function update(data, idx) {
 
 	graph = [];
 
+  // push all variables into the relevant components of the graph variable
 	for (var i in temperature) {
 		graph.push({"depth" : i, "temperature" : temperature[i], "salinity": salinity[i]});
 	}
 
+
 	graph.forEach(function(d) {
+    // if temp value is -999.999 we assign it a value of null
 		if (d.temperature == -999.999) { d.temperature = null}
 		else d.temperature = d.temperature;
+    // if sal vaue is -999.999 we assign it a value of null
 		if (d.salinity == -999.999) { d.salinity = null }
 		else d.salinity = d.salinity;
+    // parse depth to obtain numerical values
 		if (d.depth == "SURFACE") { d.depth = 0 }
 		else {d.depth = +d.depth.split("d")[1].split("M")[0]};
 	});

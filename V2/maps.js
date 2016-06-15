@@ -91,7 +91,58 @@ $( document ).ready(function() {
   	.style("opacity", 1);
 
 
-// need dynamic resize function
+
+  //Function for drawing axes
+  function drawAxes(data, graph) {
+  	var allTemp = []
+  	for (var i in data.objects.temp_woa.geometries) {
+  		for (var j in data.objects.temp_woa.geometries[i].properties) {
+  			if (data.objects.temp_woa.geometries[i].properties[j] == -999.999) { allTemp.push(null) }
+  			else { allTemp.push(data.objects.temp_woa.geometries[i].properties[j]) };
+  		}
+  	}
+  };
+
+  //Function for updating the graph
+  function update(data,idx) {
+    var temperature = data.objects.temp_woa.geometries[idx].properties;
+    var salinity = data.objects.salin_woa.geometries[idx].properties;
+    graph = [];
+
+    // push all variables into the relevant components of the graph variable
+    for (var i in temperature) {
+      graph.push({"depth" : i, "temperature" : temperature[i], "salinity": salinity[i]});
+    }
+    // formatting each graph input point
+    graph.forEach(function(d) {
+      // if temp value is -999.999 we assign it a value of null
+      if (d.temperature == -999.999) { d.temperature = null}
+      else d.temperature = d.temperature;
+      // if sal vaue is -999.999 we assign it a value of null
+      if (d.salinity == -999.999) { d.salinity = null }
+      else d.salinity = d.salinity;
+      // parse depth to obtain numerical values
+      if (d.depth == "SURFACE") { d.depth = 0 }
+      else {d.depth = +d.depth.split("d")[1].split("M")[0]};
+    });
+
+    // Define axis limits (hence, domain) for salinity data
+    var x2_floor = Math.floor(d3.min(graph.map(function(d) {return d.salinity; } )));
+    var x2_ceil = Math.ceil(d3.max(graph.map(function(d) {return d.salinity; } )));
+    x2.domain([x2_floor, x2_ceil]);
+    // console.log('x2_floor:' + x2_floor);
+    // console.log('x2_ceil:' + x2_ceil);
+
+
+  };
+
+  d3.json("temp_salin.json", function(error, data){
+    if (error) return console.error(error);
+
+    update(data,0);
+    drawAxes(data,graph);
+
+  });
 
 
 });
