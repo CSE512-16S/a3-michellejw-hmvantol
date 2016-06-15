@@ -4,11 +4,11 @@ $( document ).ready(function() {
 
   //compute the dimensions of the current div - #map-container
   var plot_width = parseInt(d3.select('#plot-container').style('width')),
-     plot_height = parseInt(d3.select('#plot-container').style('height'));
+     plot_height = parseInt(d3.select('#inforow').style('height'));
 
   //compute the dimensions of the current div - #map-container
   var map_width = parseInt(d3.select('#map-container').style('width')),
-     map_height = parseInt(d3.select('#map-container').style('height'));
+     map_height = parseInt(d3.select('#inforow').style('height'));
 
   //define margins
   var margin = {top:50, right:50, bottom:50, left:50};
@@ -84,9 +84,10 @@ $( document ).ready(function() {
   svg2.selectAll("image")
   	.data([xyorigin]).enter()
   	.append("image")
+    .attr("id","mapimg")
   	.attr("xlink:href","woa_sal2.png")
-  	.attr("width", map_width)
-  	.attr("height", map_height)
+  	.attr("width", map_width*.9)
+  	.attr("height", map_height*.9)
   	.style("opacity", 1);
 
 
