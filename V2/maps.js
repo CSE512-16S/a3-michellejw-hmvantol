@@ -35,7 +35,7 @@ $( document ).ready(function() {
   var xAxis2 = d3.svg.axis()
   	.scale(x2)
   	.orient("bottom")
-  	.ticks(6); // why do we need this?
+  	.ticks(6); // why do we need this? (mw question)
 
   // define d3 y axis
   var yAxis = d3.svg.axis()
@@ -57,11 +57,11 @@ $( document ).ready(function() {
   		.interpolate("basis");
 
   // define svg element for profile plot
-  var svg1 = d3.select("body")
+  var svg1 = d3.select("#plot")
   		.append("svg")
   		.attr("id", "profile")
-  		.attr("width", plot_width + margin.left + margin.right)
-  		.attr("height", plot_height + margin.top + margin.bottom)
+  		.attr("width", plot_width - margin.left - margin.right)
+  		.attr("height", plot_height - margin.top - margin.bottom)
   	  .append("g");
 
   // define svg element for map
@@ -108,14 +108,15 @@ $( document ).ready(function() {
 
     svg1.append("g")
       .attr("class", "x axis")
-      .call(xAxis1)
-      .attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
+      .attr("id","temperature")
+      .call(xAxis1);
+      //.attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
 
     svg1.append("g")
   		.attr("class", "x axis")
   		.attr("id", "salinity")
-  		.call(xAxis2)
-  		.attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
+  		.call(xAxis2);
+  		//.attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
 
     svg1.append("g")
   		.attr("class", "y axis")
@@ -245,8 +246,8 @@ $( document ).ready(function() {
   		.attr("text-anchor", "left")
   		.attr("font-size", "14px")
   		.attr("font-weight", "bold")
-  		.attr("x", profile_width/12)
-  		.attr("y", profile_height+margin.bottom*0.9)
+  		.attr("x", plot_width/12)
+  		.attr("y", plot_height+margin.bottom*0.9)
   		.text(" ");
 
     // lat hover text
