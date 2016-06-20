@@ -101,6 +101,63 @@ $( document ).ready(function() {
   			else { allTemp.push(data.objects.temp_woa.geometries[i].properties[j]) };
   		}
   	}
+    // set up domains for x and y axes
+    x1.domain(d3.extent(allTemp));
+    x2.domain(d3.extent(graph.map(function(d) { return d.salinity; } )) );
+    y.domain(d3.extent(graph.map(function(d) { return d.depth; } )) );
+
+    svg1.append("g")
+      .attr("class", "x axis")
+      .call(xAxis1)
+      .attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
+
+    svg1.append("g")
+  		.attr("class", "x axis")
+  		.attr("id", "salinity")
+  		.call(xAxis2)
+  		.attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
+
+    svg1.append("g")
+  		.attr("class", "y axis")
+  		.call(yAxis);
+
+    svg1.append("text")
+   		.attr("class", "x label")
+   		.attr("text-anchor", "middle")
+   		.attr("font-size", "14px")
+   		.attr("x", plot_width/2)
+   		.attr("y", (margin.top*(-0.8)))
+   		.style("fill", "red")
+   		.text("Temperature (\xB0C)");
+
+    svg1.append("text")
+  		.attr("class", "x label")
+  		.attr("text-anchor", "middle")
+  		.attr("font-size", "14px")
+  		.attr("x", plot_width/2)
+  		.attr("y", (margin.top*(-0.05)))
+  		.style("fill", "blue")
+  		.text("Salinity (\u2030)");
+
+    svg1.append("text")
+      .attr("class", "y label")
+      .attr("text-anchor", "middle")
+      .attr("font-size", "14px")
+      .attr("transform", "translate("+(-margin.left/1.5)+","+(plot_height/2)+")rotate(-90)")
+      .text("Depth (m)");
+
+    svg1.append("path")
+      .datum(graph)
+      .attr("class", "line1")
+      .attr("d", line1)
+      .style("stroke", "white");
+
+    svg1.append("path")
+      .datum(graph)
+      .attr("class", "line2")
+      .attr("d", line2)
+      .style("stroke", "white");
+
   };
 
   //Function for updating the graph
@@ -130,19 +187,143 @@ $( document ).ready(function() {
     var x2_floor = Math.floor(d3.min(graph.map(function(d) {return d.salinity; } )));
     var x2_ceil = Math.ceil(d3.max(graph.map(function(d) {return d.salinity; } )));
     x2.domain([x2_floor, x2_ceil]);
-    // console.log('x2_floor:' + x2_floor);
-    // console.log('x2_ceil:' + x2_ceil);
 
+    var axisSelect = d3.select("#profile").selectAll("g#salinity.x.axis").data([graph]);
+  	axisSelect.attr("class", "x axis").attr("transform", "translate(0,"+ (margin.top*(-0.5)) +")");
+  	axisSelect.call(xAxis2);
+
+    var tempSelect = d3.select("#profile").selectAll(".line1").data([graph]);
+    tempSelect.attr("class", "line1");
+    tempSelect.transition().duration(800).attr("d",line1).style("stroke", "red");
+
+    var salinSelect = d3.select("#profile").selectAll(".line2").data([graph]);
+    salinSelect.attr("class", "line2");
+    salinSelect.transition().duration(800).attr("d",line2).style("stroke", "blue");
 
   };
 
+  // Load json file containing temp and salinity data
   d3.json("temp_salin.json", function(error, data){
     if (error) return console.error(error);
 
     update(data,0);
     drawAxes(data,graph);
 
+    features = topojson.feature(data, data.objects.temp_woa).features
+
+    // Add svg rectangles onto the map
+    var rect = svg2.selectAll("rect")
+  		.data(features).enter()
+  		.append("rect")
+  		.attr("x", function(d) {
+  			return projection(d.geometry.coordinates)[0];
+  		})
+  		.attr("y", function(d) {
+  			return projection(d.geometry.coordinates)[1];
+  		})
+  		.attr("width", 15)
+  		.attr("height", 15)
+  		.attr("rx",3) // rounded corners
+  		.attr("ry",3) // rounded corners
+  		.style("stroke", "none")
+  		.style("fill", "black")
+  		.style("fill-opacity",0);
+
+    // lat text svg
+    var lat = svg1.append("text")
+  		.attr("id", "lat")
+  		.attr("text-anchor", "left")
+  		.attr("font-size", "14px")
+  		.attr("font-weight", "bold")
+  		.attr("x", plot_width/12)
+  		.attr("y", plot_height+margin.bottom*0.5)
+  		.text(" ");
+
+    // lon text svg
+  	var lon = svg1.append("text")
+  		.attr("id", "lon")
+  		.attr("text-anchor", "left")
+  		.attr("font-size", "14px")
+  		.attr("font-weight", "bold")
+  		.attr("x", profile_width/12)
+  		.attr("y", profile_height+margin.bottom*0.9)
+  		.text(" ");
+
+    // lat hover text
+    var lat_hover = svg2.append("text")
+  		.attr("id", "hover1")
+  		.attr("text-anchor", "left")
+  		.attr("font-size", "12px")
+  		.attr("x", map_width/2)
+  		.attr("y", map_height/2)
+  		.text(" ");
+
+    // long hover text
+    var lon_hover = svg2.append("text")
+  		.attr("id", "hover2")
+  		.attr("text-anchor", "left")
+  		.attr("font-size", "12px")
+  		.attr("x", map_width/2)
+  		.attr("y", map_height/2)
+  		.text(" ");
+
+    var active = null; // variable to record which rectangle has been clicked
+
+    // What the rectangle svgs do when you mouseover, mouseout or click (could jquery this)
+  	rect.on({
+  		"mouseover" : function(d, i) {
+  			d3.select(this).style("fill", "black").style("fill-opacity",0.2);
+  			var hoverLat = Math.round(features[i].geometry.coordinates[1]*10)/10
+  			if (hoverLat < 0) { var NS = "S"; } else { var NS = "N"; }
+  			var hoverLon = Math.round(features[i].geometry.coordinates[0]*10)/10
+  			if (hoverLon < 0) { var EW = "W"; } else { var EW = "E"; }
+  			d3.select("#map").selectAll("text#hover1")
+  				.text(Math.abs(hoverLat) + "\xB0 " + NS )
+  				.attr("x", projection(features[i].geometry.coordinates)[0]+15 )
+  				.attr("y", projection(features[i].geometry.coordinates)[1]-20 );
+  			d3.select("#map").selectAll("text#hover2")
+  				.text(Math.abs(hoverLon) + "\xB0 " + EW )
+  				.attr("x", projection(features[i].geometry.coordinates)[0]+15 )
+  				.attr("y", projection(features[i].geometry.coordinates)[1]-5 );
+  		},
+  		"mouseout" : function(d) {
+  			if (this != active) {
+  				d3.select(this).style("fill-opacity", 0);
+  			}
+  			d3.select("#map").selectAll("text#hover1").text(" ");
+  			d3.select("#map").selectAll("text#hover2").text(" ");
+  		},
+  		"click" : function(d,i) {
+  			var coordIdx = i;
+  			update(data, coordIdx);
+  			d3.select(active).style("stroke", "none"); //de-select previous
+  			d3.select(active).style("fill", "black");
+  			d3.select(active).style("fill-opacity", 0);
+  			active = this;
+  			d3.select(active).style("stroke", "white");
+  			d3.select(active).style("stroke-width", 2);
+  			var clickLat = Math.round(features[i].geometry.coordinates[1]*10)/10
+  			if (clickLat < 0) { var NS = "S"; } else { var NS = "N"; }
+  			var clickLon = Math.round(features[i].geometry.coordinates[0]*10)/10
+  			if (clickLon < 0) { var EW = "W"; } else { var EW = "E"; }
+  			d3.select("#profile").selectAll("text#lat").text("Latitude: " + Math.abs(clickLat) + "\xB0 " + NS );
+  			d3.select("#profile").selectAll("text#lon").text("Longitude: " + Math.abs(clickLon) + "\xB0 " + EW );
+  		}
+  	});
+
   });
 
+  // Update background map based on button click (Temp/Salinity)
+  function updateImage() {
+  	if (img_sal == 1) {
+  		d3.select("#bgmap").attr("xlink:href","woa_temp2.png");
+  		img_sal = 0;
+  	}
+  	else {
+  		d3.select("#bgmap").attr("xlink:href","woa_sal2.png");
+  		img_sal = 1;
+  	}
+
+  }
 
 });
